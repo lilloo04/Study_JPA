@@ -31,19 +31,19 @@ public class OrderServiceTest {
         //given
         Member member = createMember();
 
-        Book book = createBook("시골 JPA", 10, 10000);
+        Book book = createBook("시골 JPA", 10000, 10);
 
-        int ordercount = 2;
+        int orderCount = 2;
 
         //when
-        Long orderId = orderService.order(member.getId(), book.getId(), ordercount);
+        Long orderId = orderService.order(member.getId(), book.getId(), orderCount);
 
         //then
         Order getOrder = orderRepository.findOne(orderId);
 
         Assert.assertEquals("상품 주문시 상태는 ORDER", OrderStatus.ORDER, getOrder.getStatus());
         Assert.assertEquals("주문한 상품 종류 수가 정확해야 한다.",1,getOrder.getOrderItems().size());
-        Assert.assertEquals("주문 가격은 가격 * 수량이다.", 10000*ordercount, getOrder.getTotalPrice());
+        Assert.assertEquals("주문 가격은 가격 * 수량이다.", 10000*orderCount, getOrder.getTotalPrice());
         Assert.assertEquals("주문 수량만큼 재고가 줄어야 한다.",8,book.getStockQuantity());
     }
 
@@ -76,17 +76,20 @@ public class OrderServiceTest {
         orderService.cancelOrder(orderId);
 
         //then
+        Order getOrder = orderRepository.findOne(orderId);
+
         Assert.assertEquals("주문 취소시 상태는 CANCEL 이다.", OrderStatus.CANCEL, getOrder.getStatus());
         Assert.assertEquals("주문이 취소된 상품은 그만큼 재고가 증가해야 한다.",10,item.getStockQuantity());
     }
 
 
 
-    private static Book createBook(String name, int stockQuantity, int Price) {
+    private Book createBook(String name, int Price, int stockQuantity) {
         Book book = new Book();
         book.setName(name);
         book.setPrice(Price);
         book.setStockQuantity(stockQuantity);
+        em.persist(book);
         return book;
     }
 
